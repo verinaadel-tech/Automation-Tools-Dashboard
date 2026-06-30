@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jumia LC — Executive Report · Jun 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0c0f; --bg2: #10141a; --bg3: #161c24; --surface: #1a2130;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.13);
+    --text: #e8edf5; --muted: #6b7a8d; --muted2: #4a5568;
+    --accent: #00e5b0; --accent2: #3b82f6; --accent3: #f59e0b;
+    --danger: #ef4444; --success: #22c55e; --warning: #f59e0b;
+    --purple: #a855f7; --jumia: #ff6b2b;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --font-body: 'DM Sans', sans-serif;
+  }
+  html { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px; line-height: 1.6; }
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse 70% 40% at 85% 0%, rgba(0,229,176,0.055) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 50% at 10% 85%, rgba(59,130,246,0.04) 0%, transparent 55%),
+      var(--bg);
+  }
+
+  .page { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+
+  /* ── HEADER ── */
+  .header { border-bottom: 1px solid var(--border2); padding-bottom: 2rem; margin-bottom: 3rem; }
+  .header-top { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+  .logo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+  .logo-badge { background: var(--jumia); color: #fff; font-family: var(--font-display); font-weight: 800; font-size: 14px; padding: 4px 12px; border-radius: 6px; }
+  .header h1 { font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 0.5rem; }
+  .header h1 span { color: var(--accent); }
+  .header-sub { font-size: 13px; color: var(--muted); display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+  .header-sub span { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); display: inline-block; }
+  .dot-blue { background: var(--accent2); }
+  .dot-amber { background: var(--warning); }
+
+  .tag { font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 9px; border-radius: 4px; }
+  .tag-gray { border: 1px solid var(--border2); color: var(--muted); }
+  .tag-green { border: 1px solid rgba(34,197,94,0.3); color: var(--success); background: rgba(34,197,94,0.07); }
+  .tag-red { border: 1px solid rgba(239,68,68,0.3); color: var(--danger); background: rgba(239,68,68,0.07); }
+  .tag-amber { border: 1px solid rgba(245,158,11,0.3); color: var(--warning); background: rgba(245,158,11,0.07); }
+  .tag-accent { border: 1px solid rgba(0,229,176,0.3); color: var(--accent); background: rgba(0,229,176,0.07); }
+  .tag-blue { border: 1px solid rgba(59,130,246,0.3); color: var(--accent2); background: rgba(59,130,246,0.07); }
+
+  /* ── SECTION ── */
+  .section { margin-bottom: 3rem; }
+  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
+  .section-title { font-family: var(--font-display); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text); }
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+  .section-label { font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+
+  /* ── HERO KPIs ── */
+  .hero-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 2rem; }
+  .hero-kpi { background: var(--bg2); padding: 1.4rem 1.5rem; transition: background 0.2s; }
+  .hero-kpi:hover { background: var(--bg3); }
+  .hk-label { font-family: var(--font-mono); font-size: 9px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+  .hk-value { font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; line-height: 1; margin-bottom: 0.25rem; }
+  .hk-value.accent { color: var(--accent); }
+  .hk-value.blue { color: var(--accent2); }
+  .hk-value.green { color: var(--success); }
+  .hk-value.amber { color: var(--warning); }
+  .hk-value.red { color: var(--danger); }
+  .hk-value.jumia { color: var(--jumia); }
+  .hk-desc { font-size: 11px; color: var(--muted); }
+
+  /* ── TWO-TOOL SNAPSHOT ── */
+  .tool-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 2rem; }
+  .tool-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem; position: relative; overflow: hidden; }
+  .tool-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .tool-box.qc::before { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .tool-box.rev::before { background: linear-gradient(90deg, var(--accent2), var(--purple)); }
+  .tool-box-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.1rem; }
+  .tool-box-name { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .tool-box-desc { font-size: 11px; color: var(--muted); }
+  .tool-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .ts { background: var(--bg3); padding: 0.65rem 0.85rem; }
+  .ts-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted2); margin-bottom: 3px; }
+  .ts-value { font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; line-height: 1; }
+  .ts-value.accent { color: var(--accent); }
+  .ts-value.green { color: var(--success); }
+  .ts-value.blue { color: var(--accent2); }
+  .ts-value.amber { color: var(--warning); }
+  .ts-value.red { color: var(--danger); }
+
+  /* ── SAVINGS BANNER ── */
+  .savings-box {
+    background: linear-gradient(135deg, rgba(0,229,176,0.08) 0%, rgba(59,130,246,0.05) 100%);
+    border: 1px solid rgba(0,229,176,0.18);
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .savings-num { font-family: var(--font-display); font-size: 3rem; font-weight: 900; color: var(--accent); line-height: 1; flex-shrink: 0; }
+  .savings-text h3 { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+  .savings-text p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  /* ── MARKET HEALTH TABLE ── */
+  .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 2rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: var(--bg3); }
+  th { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 0.65rem 1rem; text-align: left; border-bottom: 1px solid var(--border2); white-space: nowrap; }
+  td { padding: 0.7rem 1rem; border-top: 1px solid var(--border); vertical-align: middle; }
+  tbody tr:hover td { background: var(--bg3); }
+  tfoot td { background: var(--bg3); font-family: var(--font-mono); font-size: 11px; font-weight: 500; border-top: 1px solid var(--border2); }
+  .num { text-align: right; font-family: var(--font-mono); font-size: 12px; }
+  .country-flag { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+  .flag { font-size: 17px; }
+
+  /* ── PROG BAR ── */
+  .prog { display: flex; align-items: center; gap: 7px; justify-content: flex-end; }
+  .prog-bar { width: 52px; height: 4px; background: var(--border2); border-radius: 2px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 2px; }
+  .pf-green  { background: var(--success); }
+  .pf-red    { background: var(--danger); }
+  .pf-amber  { background: var(--warning); }
+  .pf-accent { background: var(--accent); }
+  .prog-val { font-family: var(--font-mono); font-size: 11px; color: var(--muted); min-width: 38px; text-align: right; }
+
+  /* ── CHART ROW ── */
+  .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 2rem; }
+  .chart-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+  .chart-box h3 { font-family: var(--font-display); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text); margin-bottom: 1rem; }
+
+  /* ── ALERTS ── */
+  .alerts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+  .alert-card { border-radius: 10px; padding: 1.1rem 1.25rem; display: flex; gap: 12px; align-items: flex-start; }
+  .alert-card.danger { background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.22); }
+  .alert-card.warning { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.22); }
+  .alert-card.info { background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.2); }
+  .alert-card.success { background: rgba(34,197,94,0.07); border: 1px solid rgba(34,197,94,0.2); }
+  .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .alert-title { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .alert-text { font-size: 12px; color: var(--muted); line-height: 1.55; }
+
+  /* ── ACTIONS TABLE ── */
+  .action-row { display: flex; align-items: flex-start; gap: 1rem; padding: 0.85rem 1rem; border-top: 1px solid var(--border); }
+  .action-row:first-child { border-top: none; }
+  .action-priority { font-family: var(--font-mono); font-size: 9px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; min-width: 70px; flex-shrink: 0; margin-top: 2px; }
+  .action-priority.high { color: var(--danger); }
+  .action-priority.medium { color: var(--warning); }
+  .action-priority.low { color: var(--accent); }
+  .action-owner { font-size: 11px; min-width: 110px; flex-shrink: 0; }
+  .action-text { font-size: 13px; color: var(--text); flex: 1; }
+  .action-text small { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+
+  /* ── ESCALATION BREAKDOWN ── */
+  .esc-row { display: flex; align-items: center; gap: 12px; padding: 0.75rem 1rem; border-top: 1px solid var(--border); }
+  .esc-row:first-child { border-top: none; }
+  .esc-name { font-size: 13px; color: var(--text); min-width: 160px; }
+  .esc-bar-wrap { flex: 1; height: 6px; background: var(--border2); border-radius: 3px; overflow: hidden; }
+  .esc-bar { height: 100%; border-radius: 3px; }
+  .esc-meta { font-family: var(--font-mono); font-size: 11px; color: var(--muted); min-width: 90px; text-align: right; }
+
+  /* ── FOOTER ── */
+  .footer { text-align: center; padding-top: 2rem; border-top: 1px solid var(--border); color: var(--muted); font-family: var(--font-mono); font-size: 11px; }
+  .fdot { width: 4px; height: 4px; background: var(--accent); border-radius: 50%; display: inline-block; margin: 0 8px; vertical-align: middle; }
+
+  @media (max-width: 768px) {
+    .hero-grid { grid-template-columns: repeat(2, 1fr); }
+    .tool-row, .chart-row, .alerts-grid { grid-template-columns: 1fr; }
+    .tool-stats { grid-template-columns: 1fr 1fr; }
+    .page { padding: 1.5rem 1rem 4rem; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── HEADER ── -->
+  <div class="header">
+    <div class="logo-row">
+      <div class="logo-badge">JUMIA</div>
+      <span class="tag tag-gray">Local Content — Executive Report</span>
+      <span class="tag tag-accent">Jun 22–26, 2026</span>
+    </div>
+    <h1>Automation Tools <span>Performance Overview</span></h1>
+    <div class="header-sub">
+      <span><span class="dot"></span> Smart Content QC Tool · Jun 25 session</span>
+      <span><span class="dot dot-blue"></span> AI Review Moderation Agent · Jun 22–26</span>
+      <span><span class="dot dot-amber"></span> 8 Markets across Africa</span>
+    </div>
+  </div>
+
+  <!-- ── SECTION 1: HEADLINE NUMBERS ── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">At a Glance</span>
+      <span class="section-line"></span>
+      <span class="section-label">Combined — both tools</span>
+    </div>
+
+    <div class="hero-grid">
+      <div class="hero-kpi">
+        <div class="hk-label">Products QC'd</div>
+        <div class="hk-value accent">11,414</div>
+        <div class="hk-desc">In a single Jun 25 session · 8 countries</div>
+      </div>
+      <div class="hero-kpi">
+        <div class="hk-label">QC Automation Rate</div>
+        <div class="hk-value blue">94.3%</div>
+        <div class="hk-desc">Only 47 products needed human review</div>
+      </div>
+      <div class="hero-kpi">
+        <div class="hk-label">Reviews Moderated</div>
+        <div class="hk-value jumia">47,747</div>
+        <div class="hk-desc">43 batches across 5 days · 8 markets</div>
+      </div>
+      <div class="hero-kpi">
+        <div class="hk-label">Review Valid Rate</div>
+        <div class="hk-value green">94.6%</div>
+        <div class="hk-desc">45,151 reviews approved for publication</div>
+      </div>
+    </div>
+
+    <div class="hero-grid" style="margin-bottom:0">
+      <div class="hero-kpi">
+        <div class="hk-label">Manual Hours Saved</div>
+        <div class="hk-value accent">556h</div>
+        <div class="hk-desc">QC tool alone · equiv. to 23 working days</div>
+      </div>
+      <div class="hero-kpi">
+        <div class="hk-label">Critical Escalations</div>
+        <div class="hk-value red">1,636</div>
+        <div class="hk-desc">Reviews flagged for T&S / Ops action</div>
+      </div>
+      <div class="hero-kpi">
+        <div class="hk-label">Fake Product Alerts</div>
+        <div class="hk-value amber">685</div>
+        <div class="hk-desc">41.8% of all escalations · UG most at risk</div>
+      </div>
+      <div class="hero-kpi">
+        <div class="hk-label">Markets Covered</div>
+        <div class="hk-value blue">8</div>
+        <div class="hk-desc">EG · MA · CI · KE · GH · SN · UG · NG</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 2: TOOL SNAPSHOTS ── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Tool Performance</span>
+      <span class="section-line"></span>
+    </div>
+
+    <div class="tool-row">
+      <div class="tool-box qc">
+        <div class="tool-box-header">
+          <div>
+            <div class="tool-box-name">Smart Content QC Tool</div>
+            <div class="tool-box-desc">Automated product listing quality control before items go live</div>
+          </div>
+          <span class="tag tag-accent">QC</span>
+        </div>
+        <div class="tool-stats">
+          <div class="ts"><div class="ts-label">Products</div><div class="ts-value accent">11,414</div></div>
+          <div class="ts"><div class="ts-label">Automation</div><div class="ts-value blue">94.3%</div></div>
+          <div class="ts"><div class="ts-label">Time Saved</div><div class="ts-value green">556h</div></div>
+          <div class="ts"><div class="ts-label">Approved</div><div class="ts-value green">53.7%</div></div>
+          <div class="ts"><div class="ts-label">Rejected</div><div class="ts-value red">45.9%</div></div>
+          <div class="ts"><div class="ts-label">Manual QC</div><div class="ts-value amber">47</div></div>
+        </div>
+      </div>
+      <div class="tool-box rev">
+        <div class="tool-box-header">
+          <div>
+            <div class="tool-box-name">AI Review Moderation Agent</div>
+            <div class="tool-box-desc">Automated customer review moderation across 8 markets</div>
+          </div>
+          <span class="tag tag-blue">MOD</span>
+        </div>
+        <div class="tool-stats">
+          <div class="ts"><div class="ts-label">Reviews</div><div class="ts-value blue">47,747</div></div>
+          <div class="ts"><div class="ts-label">Valid Rate</div><div class="ts-value green">94.6%</div></div>
+          <div class="ts"><div class="ts-label">Batches</div><div class="ts-value accent">43</div></div>
+          <div class="ts"><div class="ts-label">Flagged</div><div class="ts-value red">2,596</div></div>
+          <div class="ts"><div class="ts-label">Escalated</div><div class="ts-value amber">1,636</div></div>
+          <div class="ts"><div class="ts-label">Speed</div><div class="ts-value green">370/s</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="savings-box">
+      <div class="savings-num">556h</div>
+      <div class="savings-text">
+        <h3>Manual Effort Replaced by Automation — QC Tool, Jun 25</h3>
+        <p>At 3 minutes per manual product check, 11,414 products would require 570 hours of human work.
+        The tool completed the same workload in under 4 hours total across all 8 countries —
+        a <strong style="color:var(--accent)">99.3% reduction in processing time</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 3: MARKET HEALTH ── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Market Health</span>
+      <span class="section-line"></span>
+      <span class="section-label">QC approval rate + review valid rate per market</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Market</th>
+            <th class="num">QC Approval Rate</th>
+            <th class="num">QC Time Saved</th>
+            <th class="num">Review Valid Rate</th>
+            <th class="num">Escalations</th>
+            <th>Health Signal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="country-flag"><span class="flag">🇪🇬</span> Egypt (EG)</span></td>
+            <td class="num"><div class="prog"><div class="prog-bar"><div class="prog-fill pf-green" style="width:79%"></div></div><span class="prog-val">79.4%</span></div></td>
+            <td class="num">103h</td>
+            <td class="num"><div class="prog"><div class="prog-bar"><div class="prog-fill pf-accent" style="width:98%"></div></div><span class="prog-val">97.7%</span></div></td>
+            <td class="num">25 total</td>
+            <td><span class="tag tag-green">✓ Healthy</span></td>
+          </tr>
+          <tr>
+            <td><span class="country-flag"><span class="flag">🇲🇦</span> Morocco (MA)</span></td>
+            <td class="num"><div class="prog"><div class="prog-bar"><div class="prog-fill pf-red" style="width:11%"></div></div><span class="prog-val" style="color:var(--danger)">11.1%</span></div></td>
+            <td class="num">143h</td>
+            <td class="num"><div class="prog"><div class="prog-bar"><div class="prog-fill pf-green" style="width:94%"></div></div><span class="prog-val">94.3%</span></div></td>
+            <td class="num">10 total</td>
+            <td><span class="tag tag-red">⚠ High QC Rejection</span></td>
+          </tr>
+          <tr>
+            <td><span class="country-flag"><span class="flag">🇨🇮</span> Côte d'Ivoire (CI)</span></td>
+            <td class="num"><div class="prog"><div class="prog-bar"><div class="prog-fill pf-green" style="width:86%"></div></div><span class="prog-val">85.8%</span></div></td>
+            <td class="num">44h</td>
+            <td class="num"><div class="prog"><div class="prog-bar"><div class="prog-fill pf-green" style="width:95%"></div></div><span class="prog-val">94.7%</span></div></td>
+            <td class="num">91 total</td>
+            <td><span class="tag tag-green">✓ Healthy</span></td>
+          </tr>
+          <tr>
+            <td><span class="country-flag"><span class="flag">🇰🇪</span> Kenya (KE)</span></td>
+            <td class="num"><div class="prog"><div class="prog-bar"><div class="prog-fill pf-amber" style="width:40%"></div></div><span class="prog-val" style="color:var(--warning)">40.3%</span></div></td>
+            <td class="num">119h</td>
+            <td class="num"><div class="prog"><div class="prog-bar"><div class="prog-fill pf-amber" style="width:94%"></div></div><span class="prog-val">93.5%</span></div></td>
+            <td class="num">261 total</td>
+            <td><span class="tag tag-amber">↗ Monitor</span></td>
+          </tr>
+          <tr>
+            <td><span class="country-flag"><span class="flag">🇬🇭</span> Ghana (GH)</span></td>
+            <td class="num"><div class="prog"><div class="prog-bar"><div class="prog-fill pf-green" style="width:83%"></div></div><span class="prog-val">83.2%</span></div></td>
+            <td class="num">4h</td>
+            <td class="num"><div class="prog"><div class="prog-bar"><div class="prog-fill pf-accent" style="width:95%"></div></div><span class="prog-val">95.1%</span></div></td>
+            <td class="num">235 total</td>
+            <td><span class="tag tag-green">✓ Healthy</span></td>
+          </tr>
+          <tr>
+            <td><span class="country-flag"><span class="flag">🇸🇳</span> Senegal (SN)</span></td>
+            <td class="num"><div class="prog"><div class="prog-bar"><div class="prog-fill pf-amber" style="width:55%"></div></div><span class="prog-val">55.3%</span></div></td>
+            <td class="num">6h</td>
+            <td class="num"><div class="prog"><div class="prog-bar"><div class="prog-fill pf-accent" style="width:95%"></div></div><span class="prog-val">95.3%</span></div></td>
+            <td class="num">23 total</td>
+            <td><span class="tag tag-amber">↗ Manual QC 21%</span></td>
+          </tr>
+          <tr>
+            <td><span class="country-flag"><span class="flag">🇺🇬</span> Uganda (UG)</span></td>
+            <td class="num"><div class="prog"><div class="prog-bar"><div class="prog-fill pf-green" style="width:69%"></div></div><span class="prog-val">68.6%</span></div></td>
+            <td class="num">13h</td>
+            <td class="num"><div class="prog"><div class="prog-bar"><div class="prog-fill pf-red" style="width:92%"></div></div><span class="prog-val" style="color:var(--danger)">92.1%</span></div></td>
+            <td class="num"><strong style="color:var(--danger)">136 total</strong></td>
+            <td><span class="tag tag-red">🚨 Fake Product Crisis</span></td>
+          </tr>
+          <tr>
+            <td><span class="country-flag"><span class="flag">🇳🇬</span> Nigeria (NG)</span></td>
+            <td class="num"><div class="prog"><div class="prog-bar"><div class="prog-fill pf-green" style="width:81%"></div></div><span class="prog-val">81.1%</span></div></td>
+            <td class="num">123h</td>
+            <td class="num"><div class="prog"><div class="prog-bar"><div class="prog-fill pf-green" style="width:95%"></div></div><span class="prog-val">94.5%</span></div></td>
+            <td class="num">511 total</td>
+            <td><span class="tag tag-green">✓ Healthy</span></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>ALL MARKETS</td>
+            <td class="num">53.7% avg</td>
+            <td class="num">556h total</td>
+            <td class="num">94.6% avg</td>
+            <td class="num">1,292 total</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-box">
+        <h3>QC Approval Rate vs Review Valid Rate by Market</h3>
+        <canvas id="marketCompare" height="230"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Review Escalation Types — Jun 22–26</h3>
+        <canvas id="escChart" height="230"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 4: KEY SIGNALS ── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Key Business Signals</span>
+      <span class="section-line"></span>
+      <span class="section-label">Requires attention</span>
+    </div>
+
+    <div class="alerts-grid">
+      <div class="alert-card danger">
+        <div class="alert-icon">🚨</div>
+        <div>
+          <div class="alert-title">Uganda — Fake Product Crisis</div>
+          <div class="alert-text">Fake Product claims account for <strong style="color:var(--danger)">65–71% of all UG escalations every single day</strong> this week (UG29–UG33). This is a systematic pattern — not a one-off. Immediate Trust & Safety investigation of the Uganda seller base is required to prevent GMV loss and customer trust damage.</div>
+        </div>
+      </div>
+      <div class="alert-card warning">
+        <div class="alert-icon">📦</div>
+        <div>
+          <div class="alert-title">Morocco — 88.9% QC Rejection Rate</div>
+          <div class="alert-text">Nearly 9 in 10 Morocco product submissions were rejected in the Jun 25 QC session (2,588 out of 2,910). Primary driver: missing or incorrect color attributes. Suggests a <strong style="color:var(--warning)">seller onboarding / training gap</strong> specific to MA that is blocking listings from going live.</div>
+        </div>
+      </div>
+      <div class="alert-card warning">
+        <div class="alert-icon">🔧</div>
+        <div>
+          <div class="alert-title">Defective Product — Top Escalation Type</div>
+          <div class="alert-text"><strong style="color:var(--warning)">809 defective product escalations</strong> (49.4% of all escalations) across NG, GH, and KE. These are customers explicitly flagging broken or non-functional items received. A seller quality review across these three markets is recommended.</div>
+        </div>
+      </div>
+      <div class="alert-card success">
+        <div class="alert-icon">⚡</div>
+        <div>
+          <div class="alert-title">Automation Delivering Clear ROI</div>
+          <div class="alert-text">The QC tool saved <strong style="color:var(--success)">556 hours of manual effort in a single session</strong> — equivalent to 23 working days. At 94.3% automation rate, only 47 products required human review out of 11,414 processed. The Review Agent processes 370 reviews/second.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 5: ESCALATION BREAKDOWN ── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Escalation Breakdown</span>
+      <span class="section-line"></span>
+      <span class="section-label">Review Moderation Agent · Jun 22–26 · 1,636 total</span>
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:0">
+      <div class="esc-row" style="padding-top:0.85rem">
+        <div style="min-width:160px;font-size:13px;color:var(--text)">Defective Product</div>
+        <div class="esc-bar-wrap"><div class="esc-bar" style="width:49.4%;background:var(--jumia)"></div></div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);min-width:90px;text-align:right">809 · 49.4%</div>
+        <div style="min-width:100px;text-align:right"><span class="tag tag-amber">NG · GH · KE</span></div>
+      </div>
+      <div class="esc-row">
+        <div style="min-width:160px;font-size:13px;color:var(--text)">Fake Product</div>
+        <div class="esc-bar-wrap"><div class="esc-bar" style="width:41.8%;background:var(--danger)"></div></div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);min-width:90px;text-align:right">685 · 41.8%</div>
+        <div style="min-width:100px;text-align:right"><span class="tag tag-red">NG · KE · UG</span></div>
+      </div>
+      <div class="esc-row">
+        <div style="min-width:160px;font-size:13px;color:var(--text)">Wrong Product</div>
+        <div class="esc-bar-wrap"><div class="esc-bar" style="width:7.8%;background:var(--accent2)"></div></div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);min-width:90px;text-align:right">127 · 7.8%</div>
+        <div style="min-width:100px;text-align:right"><span class="tag tag-blue">NG · KE · GH</span></div>
+      </div>
+      <div class="esc-row">
+        <div style="min-width:160px;font-size:13px;color:var(--text)">Damaged Product</div>
+        <div class="esc-bar-wrap"><div class="esc-bar" style="width:0.6%;background:var(--warning)"></div></div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);min-width:90px;text-align:right">9 · 0.6%</div>
+        <div style="min-width:100px;text-align:right"><span class="tag tag-amber">GH · NG</span></div>
+      </div>
+      <div class="esc-row">
+        <div style="min-width:160px;font-size:13px;color:var(--text)">Incomplete Delivery</div>
+        <div class="esc-bar-wrap"><div class="esc-bar" style="width:0.4%;background:var(--purple)"></div></div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);min-width:90px;text-align:right">6 · 0.4%</div>
+        <div style="min-width:100px;text-align:right"><span class="tag tag-gray">NG · KE</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 6: RECOMMENDED ACTIONS ── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Recommended Actions</span>
+      <span class="section-line"></span>
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:0">
+      <div class="action-row">
+        <div class="action-priority high">IMMEDIATE</div>
+        <div class="action-owner"><span class="tag tag-red">Trust & Safety</span></div>
+        <div class="action-text">
+          Investigate Uganda seller base for counterfeit and fake product listings
+          <small>Fake Product escalations at 65–71% of all UG escalations every day this week — UG29 through UG33.</small>
+        </div>
+      </div>
+      <div class="action-row">
+        <div class="action-priority high">IMMEDIATE</div>
+        <div class="action-owner"><span class="tag tag-amber">Seller Support</span></div>
+        <div class="action-text">
+          Morocco seller training on color attribute and product listing requirements
+          <small>88.9% rejection rate in Jun 25 QC session. Color missing/incorrect is the primary driver.</small>
+        </div>
+      </div>
+      <div class="action-row">
+        <div class="action-priority medium">NEAR-TERM</div>
+        <div class="action-owner"><span class="tag tag-amber">Seller Quality</span></div>
+        <div class="action-text">
+          Seller quality review for Nigeria, Ghana, and Kenya on defective product complaints
+          <small>809 Defective Product escalations across these 3 markets — 49.4% of all escalations this period.</small>
+        </div>
+      </div>
+      <div class="action-row">
+        <div class="action-priority medium">NEAR-TERM</div>
+        <div class="action-owner"><span class="tag tag-blue">Fulfilment</span></div>
+        <div class="action-text">
+          Audit wrong product fulfilment process for Nigeria, Kenya, and Ghana
+          <small>127 Wrong Product escalations this week — customers received items different from what was ordered.</small>
+        </div>
+      </div>
+      <div class="action-row">
+        <div class="action-priority low">ONGOING</div>
+        <div class="action-owner"><span class="tag tag-accent">LC Team</span></div>
+        <div class="action-text">
+          Increase Senegal QC automation coverage — currently lowest at 78.6%
+          <small>21.4% of SN products still require manual review. Review rule coverage and synonym library for SN.</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span class="fdot"></span>
+    Jumia Africa · Local Content Team
+    <span class="fdot"></span>
+    Reporting Period: Jun 22–26, 2026
+    <span class="fdot"></span>
+    Smart QC Tool (Jun 25) · AI Review Moderation Agent v2 (Jun 22–26)
+    <span class="fdot"></span>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#6b7a8d';
+
+const gridColor = 'rgba(255,255,255,0.05)';
+const MARKETS = ['EG','MA','CI','KE','GH','SN','UG','NG'];
+
+// Market comparison: QC approval vs Review valid rate
+new Chart(document.getElementById('marketCompare'), {
+  type: 'bar',
+  data: {
+    labels: MARKETS,
+    datasets: [
+      {
+        label: 'QC Approval Rate %',
+        data: [79.4, 11.1, 85.8, 40.3, 83.2, 55.3, 68.6, 81.1],
+        backgroundColor: 'rgba(0,229,176,0.7)',
+        borderRadius: 4
+      },
+      {
+        label: 'Review Valid Rate %',
+        data: [97.7, 94.3, 94.7, 93.5, 95.1, 95.3, 92.1, 94.5],
+        backgroundColor: 'rgba(59,130,246,0.7)',
+        borderRadius: 4
+      }
+    ]
+  },
+  options: {
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12 } } },
+    scales: {
+      y: { min: 0, max: 105, grid: { color: gridColor }, ticks: { callback: v => v + '%' } },
+      x: { grid: { color: 'transparent' } }
+    }
+  }
+});
+
+// Escalation doughnut
+new Chart(document.getElementById('escChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Defective Product', 'Fake Product', 'Wrong Product', 'Damaged', 'Incomplete'],
+    datasets: [{
+      data: [809, 685, 127, 9, 6],
+      backgroundColor: ['#ff6b2b', '#ef4444', '#3b82f6', '#f59e0b', '#a855f7'],
+      borderWidth: 2,
+      borderColor: '#10141a'
+    }]
+  },
+  options: {
+    cutout: '62%',
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10 } } }
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jumia LC — Automation Tools Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0c0f;
+    --bg2: #10141a;
+    --bg3: #161c24;
+    --surface: #1a2130;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #e8edf5;
+    --muted: #6b7a8d;
+    --muted2: #4a5568;
+    --accent: #00e5b0;
+    --accent2: #3b82f6;
+    --accent3: #f59e0b;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --purple: #a855f7;
+    --rose: #f43f5e;
+    --jumia: #ff6b2b;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --font-body: 'DM Sans', sans-serif;
+  }
+  html { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px; line-height: 1.6; }
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse 60% 40% at 80% 0%, rgba(0,229,176,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 10% 80%, rgba(59,130,246,0.04) 0%, transparent 60%),
+      var(--bg);
+  }
+
+  /* ── HEADER ── */
+  .top-header {
+    background: linear-gradient(180deg, rgba(26,33,48,0.98) 0%, rgba(16,20,26,0.98) 100%);
+    border-bottom: 1px solid var(--border2);
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .logo { display: flex; align-items: center; gap: 14px; }
+  .logo-badge {
+    background: var(--jumia);
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 15px;
+    padding: 5px 13px;
+    border-radius: 7px;
+    letter-spacing: -0.01em;
+  }
+  .logo-text { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text); }
+  .logo-sub { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.05em; margin-top: 2px; }
+  .header-chips { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  /* ── TAGS ── */
+  .tag { font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 9px; border-radius: 4px; border: 1px solid rgba(0,229,176,0.3); color: var(--accent); background: rgba(0,229,176,0.07); }
+  .tag-gray { border-color: var(--border2); color: var(--muted); background: transparent; }
+  .tag-blue { border-color: rgba(59,130,246,0.3); color: var(--accent2); background: rgba(59,130,246,0.07); }
+  .tag-green { border-color: rgba(34,197,94,0.3); color: var(--success); background: rgba(34,197,94,0.07); }
+  .tag-amber { border-color: rgba(245,158,11,0.3); color: var(--warning); background: rgba(245,158,11,0.07); }
+  .tag-red { border-color: rgba(239,68,68,0.3); color: var(--danger); background: rgba(239,68,68,0.07); }
+  .tag-purple { border-color: rgba(168,85,247,0.3); color: var(--purple); background: rgba(168,85,247,0.07); }
+  .tag-rose { border-color: rgba(244,63,94,0.3); color: var(--rose); background: rgba(244,63,94,0.07); }
+  .tag-jumia { border-color: rgba(255,107,43,0.3); color: var(--jumia); background: rgba(255,107,43,0.07); }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; margin-right: 5px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* ── TABS ── */
+  .tab-bar {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border2);
+    display: flex;
+    padding: 0 2rem;
+    gap: 0;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    padding: 0.9rem 1.4rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── PAGE ── */
+  .page { max-width: 1280px; margin: 0 auto; padding: 2.5rem 2rem 5rem; }
+
+  /* ── SECTION HEADER ── */
+  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem; margin-top: 2.5rem; }
+  .section-header:first-child { margin-top: 0; }
+  .section-title { font-family: var(--font-display); font-size: 0.9rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text); }
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+
+  /* ── KPI GRID ── */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 2rem; }
+  .kpi { background: var(--bg2); padding: 1.2rem 1.4rem; transition: background 0.2s; }
+  .kpi:hover { background: var(--bg3); }
+  .kpi-label { font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+  .kpi-value { font-family: var(--font-display); font-size: 2rem; font-weight: 800; line-height: 1; margin-bottom: 0.2rem; color: var(--text); }
+  .kpi-value.accent { color: var(--accent); }
+  .kpi-value.blue { color: var(--accent2); }
+  .kpi-value.green { color: var(--success); }
+  .kpi-value.red { color: var(--danger); }
+  .kpi-value.amber { color: var(--warning); }
+  .kpi-value.purple { color: var(--purple); }
+  .kpi-value.jumia { color: var(--jumia); }
+  .kpi-desc { font-size: 11px; color: var(--muted); }
+
+  /* ── SAVINGS BANNER ── */
+  .savings-box {
+    background: linear-gradient(135deg, rgba(0,229,176,0.08) 0%, rgba(59,130,246,0.06) 100%);
+    border: 1px solid rgba(0,229,176,0.2);
+    border-radius: 12px;
+    padding: 1.75rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .savings-number { font-family: var(--font-display); font-size: 3.5rem; font-weight: 800; color: var(--accent); line-height: 1; flex-shrink: 0; }
+  .savings-text h3 { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .savings-text p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* ── CHART LAYOUT ── */
+  .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 2rem; }
+  .chart-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; }
+  .chart-box h3 { font-family: var(--font-display); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text); margin-bottom: 1rem; }
+  .chart-full { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; margin-bottom: 2rem; }
+  .chart-full h3 { font-family: var(--font-display); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text); margin-bottom: 1rem; }
+
+  /* ── TABLE ── */
+  .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 2rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: var(--bg3); }
+  th { padding: 0.65rem 1rem; text-align: left; font-family: var(--font-mono); font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); white-space: nowrap; border-bottom: 1px solid var(--border2); }
+  td { padding: 0.65rem 1rem; border-top: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+  tbody tr:hover td { background: var(--bg3); }
+  td:first-child { font-weight: 500; }
+  .num { text-align: right; font-family: var(--font-mono); font-size: 12px; }
+  .country-flag { display: inline-flex; align-items: center; gap: 8px; }
+  .flag { font-size: 17px; }
+  tfoot td { background: var(--bg3); font-family: var(--font-mono); font-size: 11px; font-weight: 500; border-top: 1px solid var(--border2); }
+
+  /* ── PROGRESS BAR ── */
+  .prog-wrap { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+  .prog-bar { width: 56px; height: 4px; background: var(--border2); border-radius: 2px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 2px; }
+  .prog-fill.green { background: var(--success); }
+  .prog-fill.red { background: var(--danger); }
+  .prog-fill.amber { background: var(--warning); }
+  .prog-fill.blue { background: var(--accent2); }
+  .prog-fill.accent { background: var(--accent); }
+  .prog-val { font-family: var(--font-mono); font-size: 11px; color: var(--muted); min-width: 38px; text-align: right; }
+
+  /* ── ALERT BOX ── */
+  .alert-box {
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .alert-box.warning { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.25); }
+  .alert-box.info { background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.2); }
+  .alert-box.danger { background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.2); }
+  .alert-icon { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+  .alert-title { font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--text); margin-bottom: 3px; }
+  .alert-text { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  /* ── OVERVIEW TOOL CARDS ── */
+  .tool-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 2rem; }
+  .tool-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .tool-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .tool-card.qc::before { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .tool-card.rev::before { background: linear-gradient(90deg, var(--accent2), var(--purple)); }
+  .tool-card:hover { border-color: var(--border2); background: var(--bg3); }
+  .tool-card-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 1.25rem; }
+  .tool-card-meta { flex: 1; }
+  .tool-name { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .tool-desc { font-size: 12px; color: var(--muted); }
+  .tool-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .tool-stat { background: var(--bg3); padding: 0.75rem 1rem; }
+  .tool-stat-label { font-family: var(--font-mono); font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 4px; }
+  .tool-stat-value { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; color: var(--text); }
+  .tool-stat-value.accent { color: var(--accent); }
+  .tool-stat-value.green { color: var(--success); }
+  .tool-stat-value.blue { color: var(--accent2); }
+  .tool-stat-value.amber { color: var(--warning); }
+  .tool-stat-value.jumia { color: var(--jumia); }
+
+  /* ── PIPELINE ── */
+  .pipeline { display: flex; align-items: stretch; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 2rem; }
+  .pipe-step { flex: 1; background: var(--bg2); padding: 1rem 0.85rem; text-align: center; border-right: 1px solid var(--border); transition: background 0.2s; }
+  .pipe-step:last-child { border-right: none; }
+  .pipe-step:hover { background: var(--bg3); }
+  .pipe-num { font-family: var(--font-mono); font-size: 9px; color: var(--muted); margin-bottom: 4px; letter-spacing: 0.08em; }
+  .pipe-title { font-size: 11px; font-weight: 500; color: var(--text); margin-bottom: 5px; }
+  .pipe-count { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; color: var(--accent); line-height: 1; }
+  .pipe-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  /* ── COUNTRY ACCORDION ── */
+  .country-accordion { margin-bottom: 2rem; display: flex; flex-direction: column; gap: 6px; }
+  .acc-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .acc-header {
+    display: flex; align-items: center; gap: 12px; padding: 0.9rem 1.1rem;
+    cursor: pointer; user-select: none; transition: background 0.2s;
+    flex-wrap: wrap; gap: 10px;
+  }
+  .acc-header:hover { background: var(--bg3); }
+  .acc-flag { font-size: 20px; flex-shrink: 0; }
+  .acc-country { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--text); min-width: 130px; }
+  .acc-chips { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+  .acc-arrow { font-family: var(--font-mono); font-size: 12px; color: var(--muted); margin-left: auto; transition: transform 0.25s; }
+  .acc-item.open .acc-arrow { transform: rotate(180deg); }
+  .acc-body { display: none; padding: 0 1.1rem 1.1rem; }
+  .acc-item.open .acc-body { display: block; }
+
+  /* ── MINI KPI ROW ── */
+  .mini-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 1rem; }
+  .mini-kpi { background: var(--bg3); padding: 0.75rem 1rem; }
+  .mini-kpi-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .mini-kpi-val { font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; line-height: 1; color: var(--text); }
+  .mini-kpi-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  /* ── INLINE PIPELINE ── */
+  .inline-pipeline { display: flex; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 1rem; }
+  .ip-step { flex: 1; background: var(--bg2); padding: 0.65rem 0.5rem; text-align: center; }
+  .ip-num { font-family: var(--font-mono); font-size: 8px; color: var(--muted); letter-spacing: 0.06em; }
+  .ip-title { font-size: 10px; color: var(--text); margin: 2px 0; font-weight: 500; }
+  .ip-count { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--accent); line-height: 1; }
+  .ip-sub { font-size: 9px; color: var(--muted); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .page { padding: 1rem; }
+    .chart-row { grid-template-columns: 1fr; }
+    .tool-cards { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .top-header { padding: 1rem; }
+    .pipeline { flex-wrap: wrap; }
+  }
+
+  /* ── DATA TABLE (inside accordion) ── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 0.5rem; }
+  .data-table th { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border2); background: var(--bg3); }
+  .data-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); color: var(--text); }
+  .data-table tr:hover td { background: var(--bg3); }
+  .data-table .num { text-align: right; font-family: var(--font-mono); }
+
+  /* ── FOOTER ── */
+  .footer { text-align: center; padding-top: 2rem; border-top: 1px solid var(--border); color: var(--muted); font-family: var(--font-mono); font-size: 11px; }
+  .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); display: inline-block; margin: 0 6px; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="top-header">
+  <div class="logo">
+    <div class="logo-badge">JUMIA</div>
+    <div>
+      <div class="logo-text">Local Content — Automation Dashboard</div>
+      <div class="logo-sub">Smart QC Tool · Review Moderation Agent · 8 Markets</div>
+    </div>
+  </div>
+  <div class="header-chips">
+    <span class="tag"><span class="live-dot"></span>Jun 22–26, 2026</span>
+    <span class="tag tag-gray">8 Markets</span>
+    <span class="tag tag-blue">2 Tools</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('overview')">📊 Overview</button>
+  <button class="tab-btn" onclick="switchTab('qc')">✅ Smart QC Tool</button>
+  <button class="tab-btn" onclick="switchTab('reviews')">💬 Review Moderation</button>
+</div>
+
+<!-- ════════════════════════════════════ -->
+<!-- OVERVIEW TAB                        -->
+<!-- ════════════════════════════════════ -->
+<div id="tab-overview" class="tab-panel active">
+<div class="page">
+
+  <div class="section-header" style="margin-top:0">
+    <span class="section-title">Two Tools, One Team</span>
+    <span class="section-line"></span>
+    <span class="tag tag-gray">Jun 22–26, 2026</span>
+  </div>
+
+  <div class="tool-cards">
+    <div class="tool-card qc" onclick="switchTab('qc')">
+      <div class="tool-card-header">
+        <div>
+          <div class="tool-name">Smart Content QC Tool</div>
+          <div class="tool-desc">Automated product listing quality control · Jun 25, 2026</div>
+        </div>
+        <span class="tag">QC</span>
+      </div>
+      <div class="tool-stats">
+        <div class="tool-stat"><div class="tool-stat-label">Products</div><div class="tool-stat-value accent">11,414</div></div>
+        <div class="tool-stat"><div class="tool-stat-label">Automation</div><div class="tool-stat-value blue">94.3%</div></div>
+        <div class="tool-stat"><div class="tool-stat-label">Time Saved</div><div class="tool-stat-value green">556h</div></div>
+        <div class="tool-stat"><div class="tool-stat-label">Approved</div><div class="tool-stat-value" style="color:var(--text)">53.7%</div></div>
+      </div>
+    </div>
+    <div class="tool-card rev" onclick="switchTab('reviews')">
+      <div class="tool-card-header">
+        <div>
+          <div class="tool-name">AI Review Moderation Agent</div>
+          <div class="tool-desc">Automated customer review moderation · Jun 22–26, 2026</div>
+        </div>
+        <span class="tag tag-blue">MOD</span>
+      </div>
+      <div class="tool-stats">
+        <div class="tool-stat"><div class="tool-stat-label">Reviews</div><div class="tool-stat-value blue">47,747</div></div>
+        <div class="tool-stat"><div class="tool-stat-label">Valid Rate</div><div class="tool-stat-value green">94.6%</div></div>
+        <div class="tool-stat"><div class="tool-stat-label">Escalated</div><div class="tool-stat-value amber">1,636</div></div>
+        <div class="tool-stat"><div class="tool-stat-label">Batches</div><div class="tool-stat-value" style="color:var(--text)">43</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <span class="section-title">Market Coverage</span>
+    <span class="section-line"></span>
+    <span class="tag tag-gray">8 markets</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Market</th>
+          <th class="num">QC Products</th>
+          <th class="num">QC Approval</th>
+          <th class="num">QC Time Saved</th>
+          <th class="num">Reviews (Jun 22–26)</th>
+          <th class="num">Review Valid Rate</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇪🇬</span> Egypt (EG)</span></td>
+          <td class="num">2,104</td>
+          <td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill green" style="width:79%"></div></div><span class="prog-val">79.4%</span></div></td>
+          <td class="num">103.0h</td>
+          <td class="num">2,392</td>
+          <td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill accent" style="width:98%"></div></div><span class="prog-val">97.7%</span></div></td>
+          <td><span class="tag tag-green">Healthy</span></td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇲🇦</span> Morocco (MA)</span></td>
+          <td class="num">2,910</td>
+          <td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill red" style="width:11%"></div></div><span class="prog-val">11.1%</span></div></td>
+          <td class="num">143.1h</td>
+          <td class="num">600</td>
+          <td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill green" style="width:94%"></div></div><span class="prog-val">94.3%</span></div></td>
+          <td><span class="tag tag-red">High Rejection</span></td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇨🇮</span> Côte d'Ivoire (CI)</span></td>
+          <td class="num">880</td>
+          <td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill green" style="width:86%"></div></div><span class="prog-val">85.8%</span></div></td>
+          <td class="num">43.8h</td>
+          <td class="num">5,811</td>
+          <td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill green" style="width:95%"></div></div><span class="prog-val">94.7%</span></div></td>
+          <td><span class="tag tag-green">Healthy</span></td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇰🇪</span> Kenya (KE)</span></td>
+          <td class="num">2,496</td>
+          <td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill amber" style="width:40%"></div></div><span class="prog-val">40.3%</span></div></td>
+          <td class="num">119.3h</td>
+          <td class="num">8,028</td>
+          <td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill amber" style="width:94%"></div></div><span class="prog-val">93.5%</span></div></td>
+          <td><span class="tag tag-amber">Watch</span></td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇬🇭</span> Ghana (GH)</span></td>
+          <td class="num">95</td>
+          <td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill green" style="width:83%"></div></div><span class="prog-val">83.2%</span></div></td>
+          <td class="num">4.3h</td>
+          <td class="num">9,516</td>
+          <td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill green" style="width:95%"></div></div><span class="prog-val">95.1%</span></div></td>
+          <td><span class="tag tag-green">Healthy</span></td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇸🇳</span> Senegal (SN)</span></td>
+          <td class="num">159</td>
+          <td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill amber" style="width:55%"></div></div><span class="prog-val">55.3%</span></div></td>
+          <td class="num">6.2h</td>
+          <td class="num">1,043</td>
+          <td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill green" style="width:95%"></div></div><span class="prog-val">95.3%</span></div></td>
+          <td><span class="tag tag-amber">Manual QC High</span></td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇺🇬</span> Uganda (UG)</span></td>
+          <td class="num">283</td>
+          <td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill green" style="width:69%"></div></div><span class="prog-val">68.6%</span></div></td>
+          <td class="num">12.7h</td>
+          <td class="num">2,565</td>
+          <td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill red" style="width:92%"></div></div><span class="prog-val">92.1%</span></div></td>
+          <td><span class="tag tag-red">Fake Alert</span></td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇳🇬</span> Nigeria (NG)</span></td>
+          <td class="num">2,487</td>
+          <td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill green" style="width:81%"></div></div><span class="prog-val">81.1%</span></div></td>
+          <td class="num">123.4h</td>
+          <td class="num">17,792</td>
+          <td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill green" style="width:95%"></div></div><span class="prog-val">94.5%</span></div></td>
+          <td><span class="tag tag-green">Healthy</span></td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>TOTAL</td>
+          <td class="num">11,414</td>
+          <td class="num">53.7% avg approval</td>
+          <td class="num">556.1h</td>
+          <td class="num">47,747</td>
+          <td class="num">94.6% avg valid</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="alert-box danger">
+    <div class="alert-icon">⚠️</div>
+    <div>
+      <div class="alert-title">Uganda — Persistent Fake Product Signal</div>
+      <div class="alert-text">Fake Product escalations account for 65–71% of all Uganda review escalations across every batch this week (UG29–UG33). Immediate Trust & Safety investigation of the Uganda seller base is recommended.</div>
+    </div>
+  </div>
+  <div class="alert-box warning">
+    <div class="alert-icon">📦</div>
+    <div>
+      <div class="alert-title">Morocco — QC Rejection Rate at 88.9%</div>
+      <div class="alert-text">Morocco had the highest rejection rate in the Jun 25 QC session (2,588 out of 2,910 products). Main driver: color attribute issues. Seller guidance on confirming product color values is strongly recommended.</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════ -->
+<!-- SMART QC TAB                        -->
+<!-- ════════════════════════════════════ -->
+<div id="tab-qc" class="tab-panel">
+<div class="page">
+
+  <div class="section-header" style="margin-top:0">
+    <span class="section-title">Smart Content QC Tool</span>
+    <span class="section-line"></span>
+    <span class="tag tag-gray">Session: Jun 25, 2026</span>
+    <span class="tag">8 Countries</span>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-label">Total Products</div><div class="kpi-value accent">11,414</div><div class="kpi-desc">Processed across 8 countries</div></div>
+    <div class="kpi"><div class="kpi-label">Avg Automation Rate</div><div class="kpi-value blue">94.3%</div><div class="kpi-desc">Auto-evaluated</div></div>
+    <div class="kpi"><div class="kpi-label">Time Saved</div><div class="kpi-value green">556.1h</div><div class="kpi-desc">vs. manual at 3 min/product</div></div>
+    <div class="kpi"><div class="kpi-label">Total Approved</div><div class="kpi-value" style="color:var(--success)">6,132</div><div class="kpi-desc">53.7% approval rate</div></div>
+    <div class="kpi"><div class="kpi-label">Total Rejected</div><div class="kpi-value red">5,235</div><div class="kpi-desc">45.9% rejection rate</div></div>
+    <div class="kpi"><div class="kpi-label">Manual Review</div><div class="kpi-value amber">47</div><div class="kpi-desc">0.4% to human QC</div></div>
+  </div>
+
+  <div class="savings-box">
+    <div class="savings-number">556h</div>
+    <div class="savings-text">
+      <h3>Estimated Manual Work Saved — Jun 25 Session</h3>
+      <p>11,414 products auto-evaluated across 8 countries. At 3 minutes per manual QC check, this session saved over 23 working days of manual effort.</p>
+    </div>
+  </div>
+
+  <div class="chart-row">
+    <div class="chart-box">
+      <h3>Products Processed by Country</h3>
+      <canvas id="qcProductsBar" height="240"></canvas>
+    </div>
+    <div class="chart-box">
+      <h3>Approval vs Rejection Rate by Country</h3>
+      <canvas id="qcApprovalBar" height="240"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-row">
+    <div class="chart-box">
+      <h3>Automation Rate by Country</h3>
+      <canvas id="qcAutomationBar" height="240"></canvas>
+    </div>
+    <div class="chart-box">
+      <h3>Time Saved by Country (hours)</h3>
+      <canvas id="qcTimeSavedBar" height="240"></canvas>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <span class="section-title">Country Session Details</span>
+    <span class="section-line"></span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Country</th>
+          <th>Session</th>
+          <th class="num">Products</th>
+          <th class="num">Automation</th>
+          <th class="num">Speed (prod/min)</th>
+          <th class="num">Approved</th>
+          <th class="num">Rejected</th>
+          <th class="num">Manual</th>
+          <th class="num">Time Saved</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇰🇪</span> KE — Kenya</span></td>
+          <td><span class="tag tag-gray">11:57</span></td>
+          <td class="num">2,496</td>
+          <td class="num"><span class="tag tag-green">96.0%</span></td>
+          <td class="num">74</td>
+          <td class="num">1,005 <span style="color:var(--muted);font-size:11px">(40.3%)</span></td>
+          <td class="num" style="color:var(--danger)">1,491 <span style="font-size:11px">(59.7%)</span></td>
+          <td class="num">0</td>
+          <td class="num" style="color:var(--accent)">119.3h</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇺🇬</span> UG — Uganda</span></td>
+          <td><span class="tag tag-gray">12:21</span></td>
+          <td class="num">283</td>
+          <td class="num"><span class="tag tag-amber">91.2%</span></td>
+          <td class="num">25</td>
+          <td class="num" style="color:var(--success)">194 <span style="font-size:11px">(68.6%)</span></td>
+          <td class="num">89 <span style="color:var(--muted);font-size:11px">(31.4%)</span></td>
+          <td class="num">0</td>
+          <td class="num">12.7h</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇳🇬</span> NG — Nigeria</span></td>
+          <td><span class="tag tag-gray">13:23</span></td>
+          <td class="num">2,487</td>
+          <td class="num"><span class="tag">99.8%</span></td>
+          <td class="num">57</td>
+          <td class="num" style="color:var(--success)">2,018 <span style="font-size:11px">(81.1%)</span></td>
+          <td class="num">465 <span style="color:var(--muted);font-size:11px">(18.7%)</span></td>
+          <td class="num">4</td>
+          <td class="num" style="color:var(--accent)">123.4h</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇲🇦</span> MA — Morocco</span></td>
+          <td><span class="tag tag-gray">14:29</span></td>
+          <td class="num">2,910</td>
+          <td class="num"><span class="tag">99.1%</span></td>
+          <td class="num">44</td>
+          <td class="num" style="color:var(--danger)">322 <span style="font-size:11px">(11.1%)</span></td>
+          <td class="num" style="color:var(--danger)">2,588 <span style="font-size:11px">(88.9%)</span></td>
+          <td class="num">0</td>
+          <td class="num" style="color:var(--accent)">143.1h</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇬🇭</span> GH — Ghana</span></td>
+          <td><span class="tag tag-gray">15:02</span></td>
+          <td class="num">95</td>
+          <td class="num"><span class="tag tag-amber">91.6%</span></td>
+          <td class="num">63</td>
+          <td class="num" style="color:var(--success)">79 <span style="font-size:11px">(83.2%)</span></td>
+          <td class="num">14 <span style="color:var(--muted);font-size:11px">(14.7%)</span></td>
+          <td class="num">2</td>
+          <td class="num">4.3h</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇨🇮</span> CI — Côte d'Ivoire</span></td>
+          <td><span class="tag tag-gray">15:15</span></td>
+          <td class="num">880</td>
+          <td class="num"><span class="tag">100.0%</span></td>
+          <td class="num">65</td>
+          <td class="num" style="color:var(--success)">755 <span style="font-size:11px">(85.8%)</span></td>
+          <td class="num">125 <span style="color:var(--muted);font-size:11px">(14.2%)</span></td>
+          <td class="num">0</td>
+          <td class="num">43.8h</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇸🇳</span> SN — Senegal</span></td>
+          <td><span class="tag tag-gray">15:18</span></td>
+          <td class="num">159</td>
+          <td class="num"><span class="tag tag-red">78.6%</span></td>
+          <td class="num">72</td>
+          <td class="num">88 <span style="color:var(--muted);font-size:11px">(55.3%)</span></td>
+          <td class="num">37 <span style="color:var(--muted);font-size:11px">(23.3%)</span></td>
+          <td class="num" style="color:var(--warning)">34</td>
+          <td class="num">6.2h</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇪🇬</span> EG — Egypt</span></td>
+          <td><span class="tag tag-gray">16:45</span></td>
+          <td class="num">2,104</td>
+          <td class="num"><span class="tag">98.2%</span></td>
+          <td class="num">103</td>
+          <td class="num" style="color:var(--success)">1,671 <span style="font-size:11px">(79.4%)</span></td>
+          <td class="num">426 <span style="color:var(--muted);font-size:11px">(20.2%)</span></td>
+          <td class="num">7</td>
+          <td class="num" style="color:var(--accent)">103.0h</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2">TOTAL / AVERAGE</td>
+          <td class="num">11,414</td>
+          <td class="num">94.3%</td>
+          <td class="num">—</td>
+          <td class="num">6,132 (53.7%)</td>
+          <td class="num">5,235 (45.9%)</td>
+          <td class="num">47</td>
+          <td class="num" style="color:var(--accent)">556.1h</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- PIPELINE TABLE -->
+  <div class="section-header">
+    <span class="section-title">Processing Pipeline by Country</span>
+    <span class="section-line"></span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Country</th>
+          <th class="num">Input</th>
+          <th class="num">Manual Review</th>
+          <th class="num">Prohibited</th>
+          <th class="num">Hard-Accept</th>
+          <th class="num">AI Classify</th>
+          <th class="num">AI Uncertain</th>
+          <th class="num">Cross-Domain</th>
+          <th class="num">PIM Output</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇰🇪</span> KE</span></td>
+          <td class="num">2,496</td>
+          <td class="num">0 <span style="color:var(--muted);font-size:11px">(0.0%)</span></td>
+          <td class="num" style="color:var(--danger)">99 <span style="font-size:11px">(4.0%)</span></td>
+          <td class="num" style="color:var(--success)">1,217 <span style="font-size:11px">(48.8%)</span></td>
+          <td class="num" style="color:var(--accent2)">1,275</td>
+          <td class="num" style="color:var(--warning)">521</td>
+          <td class="num">2</td>
+          <td class="num">2,496</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇺🇬</span> UG</span></td>
+          <td class="num">283</td>
+          <td class="num">0 <span style="color:var(--muted);font-size:11px">(0.0%)</span></td>
+          <td class="num" style="color:var(--danger)">25 <span style="font-size:11px">(8.8%)</span></td>
+          <td class="num" style="color:var(--success)">135 <span style="font-size:11px">(47.7%)</span></td>
+          <td class="num" style="color:var(--accent2)">145</td>
+          <td class="num" style="color:var(--warning)">19</td>
+          <td class="num">0</td>
+          <td class="num">283</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇳🇬</span> NG</span></td>
+          <td class="num">2,487</td>
+          <td class="num" style="color:var(--warning)">4 <span style="font-size:11px">(0.2%)</span></td>
+          <td class="num">0 <span style="color:var(--muted);font-size:11px">(0.0%)</span></td>
+          <td class="num" style="color:var(--success)">1,192 <span style="font-size:11px">(47.9%)</span></td>
+          <td class="num" style="color:var(--accent2)">1,291</td>
+          <td class="num" style="color:var(--warning)">269</td>
+          <td class="num">2</td>
+          <td class="num">2,483</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇲🇦</span> MA</span></td>
+          <td class="num">2,910</td>
+          <td class="num">0 <span style="color:var(--muted);font-size:11px">(0.0%)</span></td>
+          <td class="num" style="color:var(--danger)">27 <span style="font-size:11px">(0.9%)</span></td>
+          <td class="num" style="color:var(--success)">125 <span style="font-size:11px">(4.3%)</span></td>
+          <td class="num" style="color:var(--accent2)">2,758</td>
+          <td class="num" style="color:var(--danger)">1,489</td>
+          <td class="num" style="color:var(--warning)">78</td>
+          <td class="num">2,910</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇬🇭</span> GH</span></td>
+          <td class="num">95</td>
+          <td class="num" style="color:var(--warning)">2 <span style="font-size:11px">(2.1%)</span></td>
+          <td class="num" style="color:var(--danger)">6 <span style="font-size:11px">(6.3%)</span></td>
+          <td class="num" style="color:var(--success)">44 <span style="font-size:11px">(46.3%)</span></td>
+          <td class="num" style="color:var(--accent2)">47</td>
+          <td class="num" style="color:var(--warning)">15</td>
+          <td class="num">0</td>
+          <td class="num">93</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇨🇮</span> CI</span></td>
+          <td class="num">880</td>
+          <td class="num">0 <span style="color:var(--muted);font-size:11px">(0.0%)</span></td>
+          <td class="num">0 <span style="color:var(--muted);font-size:11px">(0.0%)</span></td>
+          <td class="num" style="color:var(--success)">94 <span style="font-size:11px">(10.7%)</span></td>
+          <td class="num" style="color:var(--accent2)">786</td>
+          <td class="num" style="color:var(--warning)">192</td>
+          <td class="num">2</td>
+          <td class="num">880</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇸🇳</span> SN</span></td>
+          <td class="num">159</td>
+          <td class="num" style="color:var(--danger)">34 <span style="font-size:11px">(21.4%)</span></td>
+          <td class="num">0 <span style="color:var(--muted);font-size:11px">(0.0%)</span></td>
+          <td class="num" style="color:var(--success)">19 <span style="font-size:11px">(11.9%)</span></td>
+          <td class="num" style="color:var(--accent2)">106</td>
+          <td class="num" style="color:var(--warning)">45</td>
+          <td class="num">0</td>
+          <td class="num">125</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇪🇬</span> EG</span></td>
+          <td class="num">2,104</td>
+          <td class="num" style="color:var(--warning)">7 <span style="font-size:11px">(0.3%)</span></td>
+          <td class="num" style="color:var(--danger)">31 <span style="font-size:11px">(1.5%)</span></td>
+          <td class="num" style="color:var(--success)">915 <span style="font-size:11px">(43.5%)</span></td>
+          <td class="num" style="color:var(--accent2)">1,179</td>
+          <td class="num" style="color:var(--warning)">338</td>
+          <td class="num">8</td>
+          <td class="num">2,097</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SPEED METRICS TABLE -->
+  <div class="section-header">
+    <span class="section-title">Speed & Processing Metrics</span>
+    <span class="section-line"></span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Country</th>
+          <th class="num">Speed (prod/min)</th>
+          <th class="num">Per Product (avg)</th>
+          <th class="num">Hard-Accepted</th>
+          <th class="num">AI Classified</th>
+          <th class="num">AI Uncertain</th>
+          <th class="num">Runtime</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇪🇬</span> Egypt (EG)</span></td>
+          <td class="num" style="color:var(--accent)"><strong>103</strong></td>
+          <td class="num" style="color:var(--accent)"><strong>0.58s</strong></td>
+          <td class="num">915 <span style="color:var(--muted);font-size:11px">(43.5%)</span></td>
+          <td class="num">1,179</td>
+          <td class="num" style="color:var(--warning)">338</td>
+          <td class="num">~20 min</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇰🇪</span> Kenya (KE)</span></td>
+          <td class="num">74</td>
+          <td class="num">0.82s</td>
+          <td class="num">1,217 <span style="color:var(--muted);font-size:11px">(48.8%)</span></td>
+          <td class="num">1,275</td>
+          <td class="num" style="color:var(--danger)">521</td>
+          <td class="num">~34 min</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇸🇳</span> Senegal (SN)</span></td>
+          <td class="num">72</td>
+          <td class="num">0.83s</td>
+          <td class="num">19 <span style="color:var(--muted);font-size:11px">(11.9%)</span></td>
+          <td class="num">106</td>
+          <td class="num" style="color:var(--warning)">45</td>
+          <td class="num">~2 min</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇨🇮</span> Côte d'Ivoire (CI)</span></td>
+          <td class="num">65</td>
+          <td class="num">0.93s</td>
+          <td class="num">94 <span style="color:var(--muted);font-size:11px">(10.7%)</span></td>
+          <td class="num">786</td>
+          <td class="num" style="color:var(--warning)">192</td>
+          <td class="num">~14 min</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇬🇭</span> Ghana (GH)</span></td>
+          <td class="num">63</td>
+          <td class="num">0.95s</td>
+          <td class="num">44 <span style="color:var(--muted);font-size:11px">(46.3%)</span></td>
+          <td class="num">47</td>
+          <td class="num" style="color:var(--warning)">15</td>
+          <td class="num">~2 min</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇳🇬</span> Nigeria (NG)</span></td>
+          <td class="num">57</td>
+          <td class="num">1.05s</td>
+          <td class="num">1,192 <span style="color:var(--muted);font-size:11px">(47.9%)</span></td>
+          <td class="num">1,291</td>
+          <td class="num" style="color:var(--warning)">269</td>
+          <td class="num">~44 min</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇲🇦</span> Morocco (MA)</span></td>
+          <td class="num">44</td>
+          <td class="num">1.35s</td>
+          <td class="num">125 <span style="color:var(--muted);font-size:11px">(4.3%)</span></td>
+          <td class="num" style="color:var(--danger)">2,758</td>
+          <td class="num" style="color:var(--danger)">1,489</td>
+          <td class="num">~66 min</td>
+        </tr>
+        <tr>
+          <td><span class="country-flag"><span class="flag">🇺🇬</span> Uganda (UG)</span></td>
+          <td class="num" style="color:var(--danger)">25</td>
+          <td class="num" style="color:var(--danger)">2.41s</td>
+          <td class="num">135 <span style="color:var(--muted);font-size:11px">(47.7%)</span></td>
+          <td class="num">145</td>
+          <td class="num" style="color:var(--warning)">19</td>
+          <td class="num">~11 min</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TOP REJECTION REASONS -->
+  <div class="section-header">
+    <span class="section-title">Top Rejection Reasons by Country</span>
+    <span class="section-line"></span>
+  </div>
+
+  <div class="country-accordion" id="rejAccordion">
+
+    <!-- KE -->
+    <div class="acc-item">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <span class="acc-flag">🇰🇪</span>
+        <span class="acc-country">Kenya (KE)</span>
+        <div class="acc-chips">
+          <span class="tag tag-red">1,491 rejected</span>
+          <span class="tag tag-amber">Top: Color (24.8%)</span>
+        </div>
+        <span class="acc-arrow">▾</span>
+      </div>
+      <div class="acc-body">
+        <table class="data-table" style="width:100%">
+          <thead><tr><th>#</th><th>Check</th><th>Reason</th><th class="num">Count</th><th class="num">% of Total</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><span class="tag tag-amber">Color</span></td><td>Kindly confirm the actual product color</td><td class="num">620</td><td class="num">24.8%</td></tr>
+            <tr><td>2</td><td><span class="tag tag-amber">Color</span></td><td>Color is required</td><td class="num">81</td><td class="num">3.2%</td></tr>
+            <tr><td>3</td><td><span class="tag tag-purple">Variation</span></td><td>Variation is mandatory for this category — please fill in the variation attribute</td><td class="num">77</td><td class="num">3.1%</td></tr>
+            <tr><td>4</td><td><span class="tag tag-rose">Category</span></td><td>Category is INACTIVE — Suggested: Electronics / Cameras / Security & Surveillance Cameras</td><td class="num">32</td><td class="num">1.3%</td></tr>
+            <tr><td>5</td><td><span class="tag tag-rose">Category</span></td><td>Category is INACTIVE — Suggested: Electronics / Security & Surveillance</td><td class="num">25</td><td class="num">1.0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- UG -->
+    <div class="acc-item">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <span class="acc-flag">🇺🇬</span>
+        <span class="acc-country">Uganda (UG)</span>
+        <div class="acc-chips">
+          <span class="tag tag-amber">89 rejected</span>
+          <span class="tag tag-rose">Top: Category (7.1%)</span>
+        </div>
+        <span class="acc-arrow">▾</span>
+      </div>
+      <div class="acc-body">
+        <table class="data-table" style="width:100%">
+          <thead><tr><th>#</th><th>Check</th><th>Reason</th><th class="num">Count</th><th class="num">% of Total</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><span class="tag tag-rose">Category</span></td><td>Kindly Provide Product's Health/Food Regulation Registration Number</td><td class="num">20</td><td class="num">7.1%</td></tr>
+            <tr><td>2</td><td><span class="tag tag-rose">Category</span></td><td>Duplicate listing — this seller already has another active listing with the same product name</td><td class="num">20</td><td class="num">7.1%</td></tr>
+            <tr><td>3</td><td><span class="tag tag-amber">Color</span></td><td>Color is required</td><td class="num">6</td><td class="num">2.1%</td></tr>
+            <tr><td>4</td><td><span class="tag tag-rose">Category</span></td><td>Adult women's product listed under Kids/Children category</td><td class="num">5</td><td class="num">1.8%</td></tr>
+            <tr><td>5</td><td><span class="tag tag-rose">Category</span></td><td>Category is INACTIVE — Suggested: Health & Beauty / Hair Care</td><td class="num">2</td><td class="num">0.7%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- NG -->
+    <div class="acc-item">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <span class="acc-flag">🇳🇬</span>
+        <span class="acc-country">Nigeria (NG)</span>
+        <div class="acc-chips">
+          <span class="tag tag-amber">465 rejected</span>
+          <span class="tag tag-amber">Top: Color (3.8%)</span>
+        </div>
+        <span class="acc-arrow">▾</span>
+      </div>
+      <div class="acc-body">
+        <table class="data-table" style="width:100%">
+          <thead><tr><th>#</th><th>Check</th><th>Reason</th><th class="num">Count</th><th class="num">% of Total</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><span class="tag tag-amber">Color</span></td><td>Color is required</td><td class="num">94</td><td class="num">3.8%</td></tr>
+            <tr><td>2</td><td><span class="tag tag-purple">Variation</span></td><td>Variation is mandatory for this category — please fill in the variation attribute</td><td class="num">77</td><td class="num">3.1%</td></tr>
+            <tr><td>3</td><td><span class="tag tag-amber">Color</span></td><td>Kindly confirm the actual product color</td><td class="num">9</td><td class="num">0.4%</td></tr>
+            <tr><td>4</td><td><span class="tag tag-rose">Description</span></td><td>Description and Short Description are both empty</td><td class="num">7</td><td class="num">0.3%</td></tr>
+            <tr><td>5</td><td><span class="tag tag-green">Brand-in-Name</span></td><td>Inspired/alternative perfume brands are not accepted — high-end perfumes must use the original brand name</td><td class="num">6</td><td class="num">0.2%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MA -->
+    <div class="acc-item">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <span class="acc-flag">🇲🇦</span>
+        <span class="acc-country">Morocco (MA)</span>
+        <div class="acc-chips">
+          <span class="tag tag-red">2,588 rejected</span>
+          <span class="tag tag-rose">Top: Category (1.4%)</span>
+        </div>
+        <span class="acc-arrow">▾</span>
+      </div>
+      <div class="acc-body">
+        <table class="data-table" style="width:100%">
+          <thead><tr><th>#</th><th>Check</th><th>Reason</th><th class="num">Count</th><th class="num">% of Total</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><span class="tag tag-rose">Category</span></td><td>Product appears to be a sexual wellness item but listed under non-sexual wellness category (e.g. Skin Care)</td><td class="num">41</td><td class="num">1.4%</td></tr>
+            <tr><td>2</td><td><span class="tag tag-amber">Color</span></td><td>Color is required</td><td class="num">14</td><td class="num">0.5%</td></tr>
+            <tr><td>3</td><td><span class="tag tag-rose">Description</span></td><td>Description is just a copy of the product title — add meaningful product details</td><td class="num">6</td><td class="num">0.2%</td></tr>
+            <tr><td>4</td><td><span class="tag tag-rose">Category</span></td><td>Prohibited category</td><td class="num">4</td><td class="num">0.1%</td></tr>
+            <tr><td>5</td><td><span class="tag tag-rose">Category</span></td><td>Medical products are not allowed in MA</td><td class="num">4</td><td class="num">0.1%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- GH -->
+    <div class="acc-item">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <span class="acc-flag">🇬🇭</span>
+        <span class="acc-country">Ghana (GH)</span>
+        <div class="acc-chips">
+          <span class="tag tag-green">14 rejected</span>
+          <span class="tag tag-rose">Top: Category (2.1%)</span>
+        </div>
+        <span class="acc-arrow">▾</span>
+      </div>
+      <div class="acc-body">
+        <table class="data-table" style="width:100%">
+          <thead><tr><th>#</th><th>Check</th><th>Reason</th><th class="num">Count</th><th class="num">% of Total</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><span class="tag tag-rose">Category</span></td><td>Prohibited category</td><td class="num">2</td><td class="num">2.1%</td></tr>
+            <tr><td>2</td><td><span class="tag tag-purple">Variation</span></td><td>Variation is mandatory for this category — please fill in the variation attribute</td><td class="num">2</td><td class="num">2.1%</td></tr>
+            <tr><td>3</td><td><span class="tag tag-rose">Category</span></td><td>Kindly Provide Product's Health/Food Regulation Registration Number</td><td class="num">1</td><td class="num">1.1%</td></tr>
+            <tr><td>4</td><td><span class="tag tag-rose">Category</span></td><td>Variation is mandatory for this category</td><td class="num">1</td><td class="num">1.1%</td></tr>
+            <tr><td>5</td><td><span class="tag tag-blue">Warranty</span></td><td>Kindly confirm the product warranty — the 'product_warranty' attribute must be filled correctly</td><td class="num">1</td><td class="num">1.1%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CI -->
+    <div class="acc-item">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <span class="acc-flag">🇨🇮</span>
+        <span class="acc-country">Côte d'Ivoire (CI)</span>
+        <div class="acc-chips">
+          <span class="tag tag-green">125 rejected</span>
+          <span class="tag tag-green">Top: Brand-in-Name (3.4%)</span>
+        </div>
+        <span class="acc-arrow">▾</span>
+      </div>
+      <div class="acc-body">
+        <table class="data-table" style="width:100%">
+          <thead><tr><th>#</th><th>Check</th><th>Reason</th><th class="num">Count</th><th class="num">% of Total</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><span class="tag tag-green">Brand-in-Name</span></td><td>Product title contains brand 'SAMSUNG' but listed brand is 'Generic'. Must use actual brand name.</td><td class="num">30</td><td class="num">3.4%</td></tr>
+            <tr><td>2</td><td><span class="tag tag-green">Brand-in-Name</span></td><td>Kindly Ensure Brand Name Is Not Repeated In Product Name</td><td class="num">6</td><td class="num">0.7%</td></tr>
+            <tr><td>3</td><td><span class="tag tag-green">Brand-in-Name</span></td><td>Generic brand is not allowed for fashion items — use 'Fashion' or the actual brand name</td><td class="num">3</td><td class="num">0.3%</td></tr>
+            <tr><td>4</td><td><span class="tag tag-green">Brand-in-Name</span></td><td>Product title contains brand 'XIAOMI' but listed brand is 'Generic'</td><td class="num">3</td><td class="num">0.3%</td></tr>
+            <tr><td>5</td><td><span class="tag tag-green">Brand-in-Name</span></td><td>Product title contains brand 'TECNO' but listed brand is 'Generic'</td><td class="num">2</td><td class="num">0.2%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SN -->
+    <div class="acc-item">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <span class="acc-flag">🇸🇳</span>
+        <span class="acc-country">Senegal (SN)</span>
+        <div class="acc-chips">
+          <span class="tag tag-amber">37 rejected</span>
+          <span class="tag tag-amber">Top: Color (10.1%)</span>
+        </div>
+        <span class="acc-arrow">▾</span>
+      </div>
+      <div class="acc-body">
+        <table class="data-table" style="width:100%">
+          <thead><tr><th>#</th><th>Check</th><th>Reason</th><th class="num">Count</th><th class="num">% of Total</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><span class="tag tag-amber">Color</span></td><td>Color is required</td><td class="num">16</td><td class="num">10.1%</td></tr>
+            <tr><td>2</td><td><span class="tag tag-purple">Variation</span></td><td>Variation is mandatory for this category — please fill in the variation attribute</td><td class="num">8</td><td class="num">5.0%</td></tr>
+            <tr><td>3</td><td><span class="tag tag-blue">Warranty</span></td><td>Kindly confirm the product warranty — 'product_warranty' or 'warranty_duration' must be filled</td><td class="num">6</td><td class="num">3.8%</td></tr>
+            <tr><td>4</td><td><span class="tag tag-rose">Description</span></td><td>Description is just a copy of the product title — add meaningful product details</td><td class="num">4</td><td class="num">2.5%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EG -->
+    <div class="acc-item">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <span class="acc-flag">🇪🇬</span>
+        <span class="acc-country">Egypt (EG)</span>
+        <div class="acc-chips">
+          <span class="tag tag-amber">426 rejected</span>
+          <span class="tag tag-amber">Top: Color (4.5%)</span>
+        </div>
+        <span class="acc-arrow">▾</span>
+      </div>
+      <div class="acc-body">
+        <table class="data-table" style="width:100%">
+          <thead><tr><th>#</th><th>Check</th><th>Reason</th><th class="num">Count</th><th class="num">% of Total</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><span class="tag tag-amber">Color</span></td><td>Color is required</td><td class="num">95</td><td class="num">4.5%</td></tr>
+            <tr><td>2</td><td><span class="tag tag-blue">Warranty</span></td><td>Kindly confirm the product warranty — 'product_warranty' must be filled correctly</td><td class="num">86</td><td class="num">4.1%</td></tr>
+            <tr><td>3</td><td><span class="tag tag-purple">Variation</span></td><td>Variation is mandatory for this category — please fill with valid size, measurement, or quantity</td><td class="num">79</td><td class="num">3.8%</td></tr>
+            <tr><td>4</td><td><span class="tag tag-rose">Description</span></td><td>Description is just a copy of the product title — add meaningful product details</td><td class="num">43</td><td class="num">2.0%</td></tr>
+            <tr><td>5</td><td><span class="tag tag-blue">Warranty</span></td><td>Warranty is mandatory but value indicates no warranty — please provide actual warranty terms</td><td class="num">27</td><td class="num">1.3%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- end accordion -->
+
+  <div class="alert-box warning">
+    <div class="alert-icon">🎨</div>
+    <div>
+      <div class="alert-title">Top Rejection Reason: Color Attribute Issues</div>
+      <div class="alert-text">"Kindly confirm the actual product color" and "Color is required" are the #1 rejection drivers — especially in Kenya (620 color rejections). Seller training on color attributes is strongly recommended.</div>
+    </div>
+  </div>
+  <div class="alert-box info">
+    <div class="alert-icon">🏆</div>
+    <div>
+      <div class="alert-title">Fastest: Egypt at 103 products/min · Best Automation: Côte d'Ivoire at 100.0%</div>
+      <div class="alert-text">Egypt ran the fastest session (0.58s/product). CI achieved full automation with 0 manual reviews. Nigeria and Morocco led in time saved at 123.4h and 143.1h respectively.</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════ -->
+<!-- REVIEW MODERATION TAB               -->
+<!-- ════════════════════════════════════ -->
+<div id="tab-reviews" class="tab-panel">
+<div class="page">
+
+  <div class="section-header" style="margin-top:0">
+    <span class="section-title">AI Review Moderation Agent</span>
+    <span class="section-line"></span>
+    <span class="tag tag-gray">Jun 22–26, 2026</span>
+    <span class="tag tag-blue">43 Batches · v2</span>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-label">Total Reviews</div><div class="kpi-value blue">47,747</div><div class="kpi-desc">43 batches · 5 days · 8 markets</div></div>
+    <div class="kpi"><div class="kpi-label">Valid Rate</div><div class="kpi-value green">94.6%</div><div class="kpi-desc">45,151 reviews approved</div></div>
+    <div class="kpi"><div class="kpi-label">Flagged</div><div class="kpi-value red">2,596</div><div class="kpi-desc">5.4% removed from queue</div></div>
+    <div class="kpi"><div class="kpi-label">Escalated</div><div class="kpi-value amber">1,636</div><div class="kpi-desc">Need T&S action</div></div>
+    <div class="kpi"><div class="kpi-label">Defective Product</div><div class="kpi-value jumia">809</div><div class="kpi-desc">49.4% of escalations</div></div>
+    <div class="kpi"><div class="kpi-label">Fake Product</div><div class="kpi-value red">685</div><div class="kpi-desc">41.8% of escalations</div></div>
+  </div>
+
+  <div class="chart-row">
+    <div class="chart-box">
+      <h3>Daily Review Volume (Jun 22–26)</h3>
+      <canvas id="revDailyBar" height="240"></canvas>
+    </div>
+    <div class="chart-box">
+      <h3>Daily Valid Rate Trend</h3>
+      <canvas id="revValidLine" height="240"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-row">
+    <div class="chart-box">
+      <h3>Escalation Type Breakdown</h3>
+      <canvas id="revEscPie" height="240"></canvas>
+    </div>
+    <div class="chart-box">
+      <h3>Volume by Market (Total Period)</h3>
+      <canvas id="revMarketBar" height="240"></canvas>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <span class="section-title">Daily Summary</span>
+    <span class="section-line"></span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th class="num">Batches</th>
+          <th class="num">Total</th>
+          <th class="num">Valid</th>
+          <th class="num">Flagged</th>
+          <th class="num">Escalated</th>
+          <th class="num">Fake Product</th>
+          <th class="num">Defective</th>
+          <th class="num">Valid Rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Jun 22</strong></td><td class="num">10</td><td class="num">20,904</td><td class="num">19,744</td><td class="num">1,160</td><td class="num">782</td><td class="num">345</td><td class="num">380</td><td class="num"><span class="tag tag-amber">94.5%</span></td></tr>
+        <tr><td><strong>Jun 23</strong></td><td class="num">8</td><td class="num">7,218</td><td class="num">6,805</td><td class="num">413</td><td class="num">220</td><td class="num">78</td><td class="num">130</td><td class="num"><span class="tag tag-amber">94.3%</span></td></tr>
+        <tr><td><strong>Jun 24</strong></td><td class="num">9</td><td class="num">6,000</td><td class="num">5,702</td><td class="num">298</td><td class="num">187</td><td class="num">78</td><td class="num">91</td><td class="num"><span class="tag tag-green">95.0%</span></td></tr>
+        <tr><td><strong>Jun 25</strong></td><td class="num">8</td><td class="num">6,013</td><td class="num">5,716</td><td class="num">297</td><td class="num">194</td><td class="num">73</td><td class="num">99</td><td class="num"><span class="tag tag-green">95.1%</span></td></tr>
+        <tr><td><strong>Jun 26</strong></td><td class="num">8</td><td class="num">7,612</td><td class="num">7,184</td><td class="num">428</td><td class="num">253</td><td class="num">111</td><td class="num">109</td><td class="num"><span class="tag tag-amber">94.4%</span></td></tr>
+      </tbody>
+      <tfoot>
+        <tr><td>GRAND TOTAL</td><td class="num">43</td><td class="num">47,747</td><td class="num">45,151</td><td class="num">2,596</td><td class="num">1,636</td><td class="num">685</td><td class="num">809</td><td class="num">94.6%</td></tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="section-header">
+    <span class="section-title">Market Performance</span>
+    <span class="section-line"></span>
+    <span class="tag tag-gray">Jun 22–26, 2026</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Market</th>
+          <th class="num">Batches</th>
+          <th class="num">Total</th>
+          <th class="num">Valid</th>
+          <th class="num">Valid Rate</th>
+          <th>Key Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="country-flag"><span class="flag">🇪🇬</span> Egypt (EG)</span></td><td class="num">5</td><td class="num">2,392</td><td class="num">2,336</td><td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill accent" style="width:98%"></div></div><span class="prog-val">97.7%</span></div></td><td style="color:var(--muted);font-size:12px">Consistently high. Strong Arabic volume.</td></tr>
+        <tr><td><span class="country-flag"><span class="flag">🇲🇦</span> Morocco (MA)</span></td><td class="num">5</td><td class="num">600</td><td class="num">566</td><td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill green" style="width:94%"></div></div><span class="prog-val">94.3%</span></div></td><td style="color:var(--muted);font-size:12px">Smallest volume. Multi-language stable.</td></tr>
+        <tr><td><span class="country-flag"><span class="flag">🇨🇮</span> Côte d'Ivoire (CI)</span></td><td class="num">5</td><td class="num">5,811</td><td class="num">5,504</td><td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill green" style="width:95%"></div></div><span class="prog-val">94.7%</span></div></td><td style="color:var(--muted);font-size:12px">Largest French-language volume.</td></tr>
+        <tr><td><span class="country-flag"><span class="flag">🇰🇪</span> Kenya (KE)</span></td><td class="num">6</td><td class="num">8,028</td><td class="num">7,508</td><td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill amber" style="width:94%"></div></div><span class="prog-val">93.5%</span></div></td><td style="color:var(--muted);font-size:12px">2nd highest volume. Fake + Defective dominant.</td></tr>
+        <tr><td><span class="country-flag"><span class="flag">🇬🇭</span> Ghana (GH)</span></td><td class="num">5</td><td class="num">9,516</td><td class="num">9,055</td><td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill green" style="width:95%"></div></div><span class="prog-val">95.1%</span></div></td><td style="color:var(--muted);font-size:12px">Highest volume market. Stable 95%+.</td></tr>
+        <tr><td><span class="country-flag"><span class="flag">🇸🇳</span> Senegal (SN)</span></td><td class="num">5</td><td class="num">1,043</td><td class="num">994</td><td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill green" style="width:95%"></div></div><span class="prog-val">95.3%</span></div></td><td style="color:var(--muted);font-size:12px">Low escalations. Jun 26 file corrected + rerun.</td></tr>
+        <tr><td><span class="country-flag"><span class="flag">🇺🇬</span> Uganda (UG)</span></td><td class="num">5</td><td class="num">2,565</td><td class="num">2,362</td><td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill red" style="width:92%"></div></div><span class="prog-val" style="color:var(--danger)">92.1%</span></div></td><td><span class="tag tag-red">⚠️ Fake Product 65–71% of escalations</span></td></tr>
+        <tr><td><span class="country-flag"><span class="flag">🇳🇬</span> Nigeria (NG)</span></td><td class="num">7</td><td class="num">17,792</td><td class="num">16,816</td><td class="num"><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill green" style="width:95%"></div></div><span class="prog-val">94.5%</span></div></td><td style="color:var(--muted);font-size:12px">Highest total volume. 7 batches incl. evening runs.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-header">
+    <span class="section-title">Escalation Summary</span>
+    <span class="section-line"></span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Escalation Type</th>
+          <th class="num">Total</th>
+          <th class="num">% of Escalations</th>
+          <th>Primary Markets</th>
+          <th>Recommended Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="tag tag-jumia">Defective Product</span></td><td class="num"><strong>809</strong></td><td class="num">49.4%</td><td>NG, GH, KE</td><td style="color:var(--muted);font-size:12px">Seller quality review</td></tr>
+        <tr><td><span class="tag tag-red">Fake Product</span></td><td class="num"><strong>685</strong></td><td class="num">41.8%</td><td>NG, KE, UG</td><td style="color:var(--muted);font-size:12px">Trust & Safety investigation</td></tr>
+        <tr><td><span class="tag tag-blue">Wrong Product</span></td><td class="num">127</td><td class="num">7.8%</td><td>NG, KE, GH</td><td style="color:var(--muted);font-size:12px">Fulfilment audit</td></tr>
+        <tr><td><span class="tag tag-amber">Damaged Product</span></td><td class="num">9</td><td class="num">0.6%</td><td>GH, NG</td><td style="color:var(--muted);font-size:12px">Logistics review</td></tr>
+        <tr><td><span class="tag tag-purple">Incomplete Delivery</span></td><td class="num">6</td><td class="num">0.4%</td><td>NG, KE</td><td style="color:var(--muted);font-size:12px">Carrier investigation</td></tr>
+      </tbody>
+      <tfoot>
+        <tr><td>TOTAL</td><td class="num">1,636</td><td class="num">100%</td><td colspan="2"></td></tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="alert-box danger">
+    <div class="alert-icon">🇺🇬</div>
+    <div>
+      <div class="alert-title">Uganda — Fake Product Escalations at 65–71% Every Day</div>
+      <div class="alert-text">UG29 (60.8%) → UG31 (68.8%) → UG32 (71.4%) → UG33 (70.4%). Systematic pattern across all 5 batches. Trust & Safety must investigate the Uganda seller base immediately.</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div class="footer">
+  <span class="dot"></span>
+  Jumia Africa · Local Content Team · Automation Dashboard
+  <span class="dot"></span>
+  Smart QC Tool (Jun 25) + AI Review Moderation Agent v2 (Jun 22–26)
+  <span class="dot"></span>
+</div>
+
+<script>
+function toggleAcc(header) {
+  const item = header.parentElement;
+  item.classList.toggle('open');
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    if (b.getAttribute('onclick') === "switchTab('" + name + "')") b.classList.add('active');
+  });
+  if (name === 'qc' && !window.qcRendered) { renderQcCharts(); window.qcRendered = true; }
+  if (name === 'reviews' && !window.revRendered) { renderRevCharts(); window.revRendered = true; }
+}
+
+// Chart defaults for dark theme
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#6b7a8d';
+Chart.defaults.plugins.legend.labels.boxWidth = 10;
+Chart.defaults.plugins.legend.labels.padding = 14;
+
+const gridColor = 'rgba(255,255,255,0.05)';
+const ACCENT  = '#00e5b0';
+const BLUE    = '#3b82f6';
+const GREEN   = '#22c55e';
+const RED     = '#ef4444';
+const AMBER   = '#f59e0b';
+const PURPLE  = '#a855f7';
+const JUMIA   = '#ff6b2b';
+const COUNTRIES = ['KE','UG','NG','MA','GH','CI','SN','EG'];
+
+function renderQcCharts() {
+  new Chart(document.getElementById('qcProductsBar'), {
+    type: 'bar',
+    data: {
+      labels: COUNTRIES,
+      datasets: [{ label: 'Products', data: [2496,283,2487,2910,95,880,159,2104], backgroundColor: ACCENT, borderRadius: 5 }]
+    },
+    options: { plugins:{legend:{display:false}}, scales:{ y:{grid:{color:gridColor}}, x:{grid:{color:'transparent'}} } }
+  });
+
+  new Chart(document.getElementById('qcApprovalBar'), {
+    type: 'bar',
+    data: {
+      labels: COUNTRIES,
+      datasets: [
+        { label: 'Approved', data: [40.3,68.6,81.1,11.1,83.2,85.8,55.3,79.4], backgroundColor: GREEN, stack:'s', borderRadius:0 },
+        { label: 'Rejected', data: [59.7,31.4,18.7,88.9,14.7,14.2,23.3,20.2], backgroundColor: RED, stack:'s', borderRadius:0 },
+        { label: 'Manual',   data: [0,0,0.2,0,2.1,0,21.4,0.3], backgroundColor: AMBER, stack:'s', borderRadius:0 }
+      ]
+    },
+    options: {
+      plugins:{ legend:{ position:'bottom' } },
+      scales:{
+        x:{stacked:true, grid:{color:'transparent'}},
+        y:{stacked:true, max:100, grid:{color:gridColor}, ticks:{callback:v=>v+'%'}}
+      }
+    }
+  });
+
+  new Chart(document.getElementById('qcAutomationBar'), {
+    type: 'bar',
+    data: {
+      labels: COUNTRIES,
+      datasets: [{
+        label: 'Automation Rate',
+        data: [96.0,91.2,99.8,99.1,91.6,100.0,78.6,98.2],
+        backgroundColor: [96,91.2,99.8,99.1,91.6,100,78.6,98.2].map(v => v>=95?GREEN:v>=85?AMBER:RED),
+        borderRadius: 5
+      }]
+    },
+    options: {
+      plugins:{legend:{display:false}},
+      scales:{ y:{min:70,max:105,grid:{color:gridColor},ticks:{callback:v=>v+'%'}}, x:{grid:{color:'transparent'}} }
+    }
+  });
+
+  new Chart(document.getElementById('qcTimeSavedBar'), {
+    type: 'bar',
+    data: {
+      labels: COUNTRIES,
+      datasets: [{ label: 'Hours', data:[119.3,12.7,123.4,143.1,4.3,43.8,6.2,103.0], backgroundColor:BLUE, borderRadius:5 }]
+    },
+    options: { plugins:{legend:{display:false}}, scales:{ y:{grid:{color:gridColor}}, x:{grid:{color:'transparent'}} } }
+  });
+}
+
+function renderRevCharts() {
+  new Chart(document.getElementById('revDailyBar'), {
+    type: 'bar',
+    data: {
+      labels: ['Jun 22','Jun 23','Jun 24','Jun 25','Jun 26'],
+      datasets: [
+        { label:'Valid',   data:[19744,6805,5702,5716,7184], backgroundColor:GREEN, stack:'s', borderRadius:0 },
+        { label:'Flagged', data:[1160,413,298,297,428],       backgroundColor:RED,   stack:'s', borderRadius:0 }
+      ]
+    },
+    options: {
+      plugins:{ legend:{position:'bottom'} },
+      scales:{ x:{stacked:true,grid:{color:'transparent'}}, y:{stacked:true,grid:{color:gridColor}} }
+    }
+  });
+
+  new Chart(document.getElementById('revValidLine'), {
+    type: 'line',
+    data: {
+      labels: ['Jun 22','Jun 23','Jun 24','Jun 25','Jun 26'],
+      datasets: [{
+        label:'Valid Rate %',
+        data:[94.5,94.3,95.0,95.1,94.4],
+        borderColor: ACCENT,
+        backgroundColor:'rgba(0,229,176,0.07)',
+        fill:true, tension:0.4,
+        pointBackgroundColor: ACCENT, pointRadius:5
+      }]
+    },
+    options: {
+      plugins:{legend:{display:false}},
+      scales:{ y:{min:93,max:96,grid:{color:gridColor},ticks:{callback:v=>v+'%'}}, x:{grid:{color:'transparent'}} }
+    }
+  });
+
+  new Chart(document.getElementById('revEscPie'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Defective Product','Fake Product','Wrong Product','Damaged Product','Incomplete Delivery'],
+      datasets: [{ data:[809,685,127,9,6], backgroundColor:[JUMIA,RED,BLUE,AMBER,PURPLE], borderWidth:2, borderColor:'#10141a' }]
+    },
+    options: { cutout:'62%', plugins:{ legend:{position:'bottom'} } }
+  });
+
+  new Chart(document.getElementById('revMarketBar'), {
+    type: 'bar',
+    data: {
+      labels: ['EG','MA','CI','KE','GH','SN','UG','NG'],
+      datasets: [{
+        label:'Total Reviews',
+        data:[2392,600,5811,8028,9516,1043,2565,17792],
+        backgroundColor:['EG','MA','CI','KE','GH','SN','UG','NG'].map(c=>c==='UG'?RED:BLUE),
+        borderRadius:5
+      }]
+    },
+    options: { plugins:{legend:{display:false}}, scales:{ y:{grid:{color:gridColor}}, x:{grid:{color:'transparent'}} } }
+  });
+}
+</script>
+</body>
+</html>
